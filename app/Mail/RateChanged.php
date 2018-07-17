@@ -6,19 +6,28 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Entity\Currency;
+use App\User;
 
 class RateChanged extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $user;
+    public $currency;
+    public $oldRate;
+
     /**
      * Create a new message instance.
-     *
-     * @return void
+     * @param User $user
+     * @param Currency $currency
+     * @param float $oldRate
      */
-    public function __construct()
+    public function __construct(User $user, Currency $currency, float $oldRate)
     {
-
+        $this->user = $user;
+        $this->currency = $currency;
+        $this->oldRate = $oldRate;
     }
 
     /**
@@ -28,5 +37,12 @@ class RateChanged extends Mailable
      */
     public function build()
     {
+        return $this->view('email.rate-change')
+            ->with([
+                'userName' => $this->user->name,
+                'currencyName' => $this->currency->name,
+                'oldRate' => $this->oldRate,
+                'newRate' => $this->currency->rate,
+            ]);
     }
 }
